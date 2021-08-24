@@ -5,9 +5,4 @@ Configuration-Version: 1
 Ignored-Block-IDs:
   - 0 # Air
   - 95 # Invisible Bedrock
-  - 212 # Border Block (PowerNukkit)
-
-# The maximum amount of blocks that will be used to generate a model
-# This is set since BlockBench isn't too optimized for a lot of objects
-# The below default, 20000, is for a 30x30x20 area (Length, Width, Height)
-Max-Blocks: 20000
+  - 212 # Border Block (PowerNukkit only)

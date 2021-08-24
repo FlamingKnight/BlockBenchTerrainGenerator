@@ -2,7 +2,6 @@ package io.github.flaming.bbmodeler;
 
 import cn.nukkit.Player;
 import cn.nukkit.block.Block;
-import cn.nukkit.block.BlockID;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.command.data.CommandParamType;
@@ -33,11 +32,10 @@ public class CreationCommand extends Command {
         setDescription("A command to make a model out of the existing area around you!");
         commandParameters.put("default", new CommandParameter[]{
                 CommandParameter.newType("ModelName", CommandParamType.STRING),
-                CommandParameter.newType("Pos1", CommandParamType.BLOCK_POSITION),
-                CommandParameter.newType("Pos2", CommandParamType.BLOCK_POSITION)
+                CommandParameter.newType("MinX,MinY,MinZ", CommandParamType.STRING),
+                CommandParameter.newType("MaxX,MaxY,MaxZ", CommandParamType.STRING)
         });
         setPermission("blockbench.createmodel");
-        //TODO: Idea, change it to a string as *,*,* or x,y,z?
     }
 
     @Override
@@ -101,7 +99,7 @@ public class CreationCommand extends Command {
         player.sendMessage(TextFormat.GREEN + "Starting to generate the BlockBench model! This may lag or take a while!");
         player.sendMessage(TextFormat.RED + "If it doesn't complete, you may not have enough dedicated RAM to run this!");
         player.sendMessage(TextFormat.RED + "Keep in mind, with current limitations there can only be 64 different types of blocks that appear in the blockbench model!");
-        Main.getInstance().getServer().getScheduler().scheduleDelayedTask(Main.getInstance(), () -> {
+        BBTerrainGenerator.getInstance().getServer().getScheduler().scheduleDelayedTask(BBTerrainGenerator.getInstance(), () -> {
             LinkedHashMap<Integer, Vector2i> uvLocations = new LinkedHashMap<>();
             int uvOffsetX = 0;
             int uvOffsetY = 0;
@@ -111,24 +109,30 @@ public class CreationCommand extends Command {
                 for(int x = minLocation.x; x < maxLocation.x; x++) {
                     for(int z = minLocation.z; z < maxLocation.z; z++) {
                         Block block = player.getLevel().getBlock(new Vector3(x, y, z));
-                        if(block.getId() != 0 && block.getId() != BlockID.INVISIBLE_BEDROCK) {
-                            if(!uvLocations.containsKey(block.getId())) {
-                                if(uvOffsetX < 224) {
-                                    uvOffsetX += 32;
-                                } else {
-                                    uvOffsetX = 0;
-                                    uvOffsetY += 32;
-                                }
-                                uvLocations.put(block.getId(), new Vector2i(uvOffsetX, uvOffsetY));
+                        boolean isDisallowedBlock = false;
+                        for(int blackListedBID : BBTerrainGenerator.getInstance().blackListedBlockIDs) {
+                            if(block.getId() == blackListedBID) {
+                                isDisallowedBlock = true;
+                                break;
                             }
-                            Vector2i offset = uvLocations.get(block.getId());
-                            bbLayer.addCube(new BBCube(
-                                    block.getName() + " " + x + " " + z, false,
-                                    new Vector3i(x, y-minLocation.y, z), new Vector3i(x+1, y-minLocation.y+1, z+1),
-                                    0, 0, false,
-                                    new int[]{x, y, z}, new int[]{offset.x, offset.y}, BBFace.getOffsetMap(offset)
-                            ));
                         }
+                        if(isDisallowedBlock) continue;
+                        if(!uvLocations.containsKey(block.getId())) {
+                            if(uvOffsetX < 224) {
+                                uvOffsetX += 32;
+                            } else {
+                                uvOffsetX = 0;
+                                uvOffsetY += 32;
+                            }
+                            uvLocations.put(block.getId(), new Vector2i(uvOffsetX, uvOffsetY));
+                        }
+                        Vector2i offset = uvLocations.get(block.getId());
+                        bbLayer.addCube(new BBCube(
+                                block.getName() + " " + x + " " + z, false,
+                                new Vector3i(x, y-minLocation.y, z), new Vector3i(x+1, y-minLocation.y+1, z+1),
+                                0, 0, false,
+                                new int[]{x, y, z}, new int[]{offset.x, offset.y}, BBFace.getOffsetMap(offset)
+                        ));
                     }
                 }
                 if(!bbLayer.getTransientChildren().isEmpty()) layers.add(bbLayer);
