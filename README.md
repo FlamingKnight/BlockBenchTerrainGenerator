@@ -15,4 +15,4 @@ After creating the model, you can double click it to open it, once opened, it wi
 A note about painting, **each block has a 16x16 texture to paint in**. Selecting edit, then the texture or a block, will show its area in the texture PNG, any paintings applied to one block, will apply for all of the same type!
 
 # Notes
-Right now, meta checks still need to be implemented, so for blocks such as wool, painting on white wool, or a specific color, will apply to all colors, this is planned on being fixed!
+The maximum amount of blocks in the texture can be 63

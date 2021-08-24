@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class CreationCommand extends Command {
@@ -100,15 +101,20 @@ public class CreationCommand extends Command {
         player.sendMessage(TextFormat.RED + "If it doesn't complete, you may not have enough dedicated RAM to run this!");
         player.sendMessage(TextFormat.RED + "Keep in mind, with current limitations there can only be 64 different types of blocks that appear in the blockbench model!");
         BBTerrainGenerator.getInstance().getServer().getScheduler().scheduleDelayedTask(BBTerrainGenerator.getInstance(), () -> {
-            LinkedHashMap<Integer, Vector2i> uvLocations = new LinkedHashMap<>();
+            LinkedHashMap<Vector2i, Vector2i> uvLocations = new LinkedHashMap<>();
             int uvOffsetX = 0;
             int uvOffsetY = 0;
             ArrayList<BBLayer> layers = new ArrayList<>();
             for(int y = minLocation.y; y < maxLocation.y; y++) {
-                BBLayer bbLayer = new BBLayer("BBLayer" + y, new int[]{0, 0, 0}, "", UUID.randomUUID(), true, false, false, true, 0, new ArrayList<>());
+                BBLayer bbLayer = new BBLayer(
+                        "BBLayer" + y, new int[]{0, 0, 0}, "", UUID.randomUUID(),
+                        true, false, false, true,
+                        0, new ArrayList<>()
+                );
                 for(int x = minLocation.x; x < maxLocation.x; x++) {
                     for(int z = minLocation.z; z < maxLocation.z; z++) {
                         Block block = player.getLevel().getBlock(new Vector3(x, y, z));
+                        Vector2i blockIDMeta = new Vector2i(block.getId(), block.getDamage());
                         boolean isDisallowedBlock = false;
                         for(int blackListedBID : BBTerrainGenerator.getInstance().blackListedBlockIDs) {
                             if(block.getId() == blackListedBID) {
@@ -117,16 +123,16 @@ public class CreationCommand extends Command {
                             }
                         }
                         if(isDisallowedBlock) continue;
-                        if(!uvLocations.containsKey(block.getId())) {
+                        if(!valueExists(blockIDMeta, uvLocations)) {
                             if(uvOffsetX < 224) {
                                 uvOffsetX += 32;
                             } else {
                                 uvOffsetX = 0;
                                 uvOffsetY += 32;
                             }
-                            uvLocations.put(block.getId(), new Vector2i(uvOffsetX, uvOffsetY));
+                            uvLocations.put(blockIDMeta, new Vector2i(uvOffsetX, uvOffsetY));
                         }
-                        Vector2i offset = uvLocations.get(block.getId());
+                        Vector2i offset = getValue(blockIDMeta, uvLocations);
                         bbLayer.addCube(new BBCube(
                                 block.getName() + " " + x + " " + z, false,
                                 new Vector3i(x, y-minLocation.y, z), new Vector3i(x+1, y-minLocation.y+1, z+1),
@@ -158,7 +164,7 @@ public class CreationCommand extends Command {
                 );
                 bbTextures.add(bbTexture);
             } catch (Exception e) {
-                player.sendMessage(TextFormat.RED + "Something went wrong while generating the texture!");
+                player.sendMessage(TextFormat.RED + "Something went wrong while generating the textures for the model! The model will still generate, though no textures will be applied!");
                 e.printStackTrace();
             }
 
@@ -189,5 +195,19 @@ public class CreationCommand extends Command {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean valueExists(Vector2i vector2i, Map<Vector2i, Vector2i> map) {
+        for(Vector2i keyInMap : map.keySet()) {
+            if(vector2i.x == keyInMap.x && vector2i.y == keyInMap.y) return true;
+        }
+        return false;
+    }
+
+    public Vector2i getValue(Vector2i key, Map<Vector2i, Vector2i> map) {
+        for(Vector2i keyInMap : map.keySet()) {
+            if(key.x == keyInMap.x && key.y == keyInMap.y) return map.get(keyInMap);
+        }
+        return null;
     }
 }
