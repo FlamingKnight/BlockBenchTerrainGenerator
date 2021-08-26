@@ -2,6 +2,7 @@ package io.github.flaming.bbmodeler;
 
 import cn.nukkit.block.BlockID;
 import cn.nukkit.plugin.PluginBase;
+import cn.nukkit.utils.TextFormat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class BBTerrainGenerator extends PluginBase {
             getLogger().error("Something went wrong while initializing the BlockBenchTerrainGenerator configuration!");
             e.printStackTrace();
         }
+        getLogger().info(TextFormat.GREEN + "Successfully started the BlockBench Terrain Generator!");
         getServer().getCommandMap().register("blockbench", new CreationCommand());
     }
 
