@@ -61,7 +61,7 @@ public class CreationCommand extends Command {
 
         String modelName = args[0];
         String[] firstLocString = args[1].split(",");
-        if(firstLocString.length <= 3) {
+        if(firstLocString.length < 3) {
             sender.sendMessage(TextFormat.RED + "Something is wrong with your first position, make sure it follows the format x,y,z!");
             return false;
         }
@@ -87,13 +87,13 @@ public class CreationCommand extends Command {
 
         final Vector3i minLocation = new Vector3i(
                 Math.min(firstLocation.x, secondLocation.x),
-                Math.min(firstLocation.x, secondLocation.x),
-                Math.min(firstLocation.x, secondLocation.x)
+                Math.min(firstLocation.y, secondLocation.y),
+                Math.min(firstLocation.z, secondLocation.z)
         );
         final Vector3i maxLocation = new Vector3i(
                 Math.max(firstLocation.x, secondLocation.x),
-                Math.max(firstLocation.x, secondLocation.x),
-                Math.max(firstLocation.x, secondLocation.x)
+                Math.max(firstLocation.y, secondLocation.y),
+                Math.max(firstLocation.z, secondLocation.z)
         );
 
         Player player = (Player) sender;
@@ -119,12 +119,11 @@ public class CreationCommand extends Command {
                         for(int blackListedBID : BBTerrainGenerator.getInstance().blackListedBlockIDs) {
                             if(block.getId() == blackListedBID) {
                                 isDisallowedBlock = true;
-                                break;
                             }
                         }
                         if(isDisallowedBlock) continue;
-                        if(!valueExists(blockIDMeta, uvLocations)) {
-                            if(uvOffsetX < 224) {
+                        if (!valueExists(blockIDMeta, uvLocations)) {
+                            if (uvOffsetX < 224) {
                                 uvOffsetX += 32;
                             } else {
                                 uvOffsetX = 0;
@@ -135,7 +134,7 @@ public class CreationCommand extends Command {
                         Vector2i offset = getValue(blockIDMeta, uvLocations);
                         bbLayer.addCube(new BBCube(
                                 block.getName() + " " + x + " " + z, false,
-                                new Vector3i(x, y-minLocation.y, z), new Vector3i(x+1, y-minLocation.y+1, z+1),
+                                new Vector3i(x, y - minLocation.y, z), new Vector3i(x + 1, y - minLocation.y + 1, z + 1),
                                 0, 0, false,
                                 new int[]{x, y, z}, new int[]{offset.x, offset.y}, BBFace.getOffsetMap(offset)
                         ));

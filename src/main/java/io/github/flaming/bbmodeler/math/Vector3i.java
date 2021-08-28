@@ -31,4 +31,8 @@ public class Vector3i {
     public int getZ() {
         return this.z;
     }
+
+    public String toString() {
+        return "Vector3i(x:"+x+",y:"+y+",z:"+z+")";
+    }
 }

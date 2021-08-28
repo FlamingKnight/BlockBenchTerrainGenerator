@@ -10,6 +10,6 @@ public class Vector2i {
     }
 
     public String toString() {
-        return "Vector2(x:"+x+",y:"+y+")";
+        return "Vector2i(x:"+x+",y:"+y+")";
     }
 }
